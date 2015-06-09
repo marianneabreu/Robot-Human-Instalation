@@ -6,14 +6,12 @@ import processing.video.*;
 import deadpixel.keystone.*;
 Keystone ks;
 
-
 /*** OSC ***/
 import oscP5.*;
 import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 int pushCount = 0;
-
 
 
 /*** SOUND ***/
@@ -40,8 +38,6 @@ String[] rightMovieFilenames = new String[]{"testred.mov", "testyellow.mov"};
 ClippingMask[] leftClips = new ClippingMask[leftMovieFilenames.length];
 ClippingMask[] rightClips = new ClippingMask[rightMovieFilenames.length];
 
-
-ClippingMask[] clip = new ClippingMask[numShapes];
 boolean calibrate = true;
 
 
@@ -51,13 +47,11 @@ PGraphics[] faceTextures = new PGraphics[3];
 PImage[] shade = new PImage[3];
 
 
-
-
 void setup(){
   size(1024,800,P3D);
   
+  // Create clipping masks for videos
   setupClippingMasks();
-  
   
   /*** SETUP: KEYSTONE FOR FACE TEXTURES ***/
   ks = new Keystone(this);
@@ -69,10 +63,6 @@ void setup(){
     shade[1] = loadImage("blackmask.png");
     shade[2] = loadImage("blackmask.png");
   }
- 
- /*** SETUP: CLIPPING MASK FOR BACKGROUND ***/
-  //clip[0] =  new ClippingMask(this, "testgreen.mov", "clip0.json", 0);
-  //clip[1] = new ClippingMask(this, "testblue.mov", "clip1.json", 1);
   
   smooth();
  
@@ -114,18 +104,14 @@ void delay(int ms) {
 
 void draw(){
   background(0);
-  
-  /*** DRAWING: CLIPPING MASK FOR BACKGROUND ***/  
-//  for(int i=0;i<clip.length;i++){
-//    clip[i].drawClippingMask();
-//  }
 
-   leftClips[leftClipIndex].drawClippingMask();
-   rightClips[rightClipIndex].drawClippingMask();
+  /*** DRAWING: CLIPPING MASKS ***/ 
+  leftClips[leftClipIndex].drawClippingMask();
+  rightClips[rightClipIndex].drawClippingMask();
   
   
     /*** DRAWING: KEYSTONE FOR FACE TEXTURES ***/ 
-   for(int i=0; i<face.length; i++){
+    for(int i=0; i<face.length; i++){
     faceTextures[i].beginDraw();
     faceTextures[i].background(0);
     faceTextures[i].image(shade[i], 0, 0, faceTextures[i].width, faceTextures[i].height);
@@ -143,27 +129,6 @@ void draw(){
   }
 }
 
-// Function created to change the images
-//void changeImage(String newImageFileName) {
-//  shade = loadImage(newImageFileName);
-//  println ("image changed"); 
-//}
-
-// Function created to change the movies
-//void changeMovieRight(String newMovieFileName) {
-//  saveCalibration();
-//  clip[0] = new ClippingMask(this, newMovieFileName, "clip0.json", 0);
-//  loadCalibration();
-//  println ("movie Right changed");
-//}
-//
-//void changeMovieLeft(String newMovieFileName) {
-//  saveCalibration();
-//  clip[1] = new ClippingMask(this, newMovieFileName, "clip1.json", 0);
-//  loadCalibration();
-//  println ("movie Left changed");
-//}
-
 void changeMovieRight(int ind) {
   rightClipIndex = ind;
   println ("movie Right changed");
@@ -180,7 +145,7 @@ ClippingMask currentClip;
 void mousePressed(){  
   if(calibrate){
     // ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
-    println("elloe");
+
     // Look to see if the click is inside the shape
     boolean addNewPoint = true;
     for(int i=0;i<currentClip.controlPoints.size();i++){
@@ -220,12 +185,10 @@ void keyPressed(){
     currentClip = rightClips[rightClipIndex];
   }
   else if(key == 's'){
-    // saveCalibration();
     saveClippingMaskCalibration();
     ks.save("mapping.xml");
   }
   else if(key == 'l'){
-//    loadCalibration();
     loadClippingMaskCalibration();
     ks.load("mapping.xml");
   }
@@ -254,12 +217,9 @@ void keyPressed(){
   }
 }
 
-void saveClippingMaskCalibration() {
-  
+void saveClippingMaskCalibration() {  
   leftClips[leftClipIndex].saveData();
   rightClips[rightClipIndex].saveData();
-  
-  //setupClippingMasks();
 }
 
 void loadClippingMaskCalibration() {
@@ -272,18 +232,6 @@ void loadClippingMaskCalibration() {
     rightClips[i].loadData();
   }
   
-}
-
-void saveCalibration(){
-  for(int i=0;i<clip.length;i++){
-    clip[i].saveData();
-  }
-}
-
-void loadCalibration(){
-  for(int i=0;i<clip.length;i++){
-    clip[i].loadData();
-  }
 }
 
 
