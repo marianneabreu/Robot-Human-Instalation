@@ -29,7 +29,18 @@ AudioSample snare;   // here we have made two AudioSample variables named kick a
 int currShape = 0;
 int numShapes = 2;
 
+int leftClipIndex = 0;
+int rightClipIndex = 0;
+
 /*** CLIPPING MASK FOR BACKGROUND ***/
+
+String[] leftMovieFilenames = new String[]{"testgreen.mov", "testblue.mov"};
+String[] rightMovieFilenames = new String[]{"testred.mov", "testyellow.mov"};
+
+ClippingMask[] leftClips = new ClippingMask[leftMovieFilenames.length];
+ClippingMask[] rightClips = new ClippingMask[rightMovieFilenames.length];
+
+
 ClippingMask[] clip = new ClippingMask[numShapes];
 boolean calibrate = true;
 
@@ -45,6 +56,9 @@ PImage[] shade = new PImage[3];
 void setup(){
   size(1024,800,P3D);
   
+  setupClippingMasks();
+  
+  
   /*** SETUP: KEYSTONE FOR FACE TEXTURES ***/
   ks = new Keystone(this);
  
@@ -57,8 +71,8 @@ void setup(){
   }
  
  /*** SETUP: CLIPPING MASK FOR BACKGROUND ***/
-  clip[0] =  new ClippingMask(this, "testgreen.mov", "clip0.json", 0);
-  clip[1] = new ClippingMask(this, "testblue.mov", "clip1.json", 1);
+  //clip[0] =  new ClippingMask(this, "testgreen.mov", "clip0.json", 0);
+  //clip[1] = new ClippingMask(this, "testblue.mov", "clip1.json", 1);
   
   smooth();
  
@@ -79,17 +93,35 @@ void setup(){
 
 }
 
+void setupClippingMasks() {
+  for (int i = 0; i < leftMovieFilenames.length; i++) {
+    leftClips[i] = new ClippingMask(this, leftMovieFilenames[i], "clipLeft.json", 0);
+  }
+
+  for (int i = 0; i < rightMovieFilenames.length; i++) {
+    rightClips[i] = new ClippingMask(this, rightMovieFilenames[i], "clipRight.json", 0);
+  }
+}
+
 void movieEvent(Movie m) {
   m.read();
+}
+
+void delay(int ms) {
+  int time = millis() + ms;
+  while (millis() < time) {}
 }
 
 void draw(){
   background(0);
   
   /*** DRAWING: CLIPPING MASK FOR BACKGROUND ***/  
-  for(int i=0;i<clip.length;i++){
-    clip[i].drawClippingMask();
-  }
+//  for(int i=0;i<clip.length;i++){
+//    clip[i].drawClippingMask();
+//  }
+
+   leftClips[leftClipIndex].drawClippingMask();
+   rightClips[rightClipIndex].drawClippingMask();
   
   
     /*** DRAWING: KEYSTONE FOR FACE TEXTURES ***/ 
@@ -118,26 +150,38 @@ void draw(){
 //}
 
 // Function created to change the movies
-void changeMovieRight(String newMovieFileName) {
-  saveCalibration();
-  clip[0] = new ClippingMask(this, newMovieFileName, "clip0.json", 0);
-  loadCalibration();
+//void changeMovieRight(String newMovieFileName) {
+//  saveCalibration();
+//  clip[0] = new ClippingMask(this, newMovieFileName, "clip0.json", 0);
+//  loadCalibration();
+//  println ("movie Right changed");
+//}
+//
+//void changeMovieLeft(String newMovieFileName) {
+//  saveCalibration();
+//  clip[1] = new ClippingMask(this, newMovieFileName, "clip1.json", 0);
+//  loadCalibration();
+//  println ("movie Left changed");
+//}
+
+void changeMovieRight(int ind) {
+  rightClipIndex = ind;
   println ("movie Right changed");
-  }
+}
 
-
-void changeMovieLeft(String newMovieFileName) {
-  saveCalibration();
-  clip[1] = new ClippingMask(this, newMovieFileName, "clip1.json", 0);
-  loadCalibration();
+void changeMovieLeft(int ind) {
+  leftClipIndex = ind;
   println ("movie Left changed");
 }
 
-void mousePressed(){
-    
+
+ClippingMask currentClip;
+
+void mousePressed(){  
   if(calibrate){
-    ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
-    
+    // ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
+    println("elloe");
+    // Look to see if the click is inside the shape
     boolean addNewPoint = true;
     for(int i=0;i<currentClip.controlPoints.size();i++){
       if(currentClip.controlPoints.get(i).mouseInside){
@@ -145,6 +189,8 @@ void mousePressed(){
         break;
       }
     }
+    
+    // If the click is outside of the shape, add a new control point
     if(addNewPoint){
       currentClip.addPointToShape(mouseX, mouseY, random(0,1));
     }
@@ -153,7 +199,7 @@ void mousePressed(){
 
 void mouseDragged(){
   if(calibrate){
-    ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
+    // ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
     
     for(int i=0;i<currentClip.controlPoints.size();i++){
       if(currentClip.controlPoints.get(i).mouseInside){
@@ -167,12 +213,20 @@ void keyPressed(){
   if(key == 'c'){
     calibrate = !calibrate;  
   }
+  else if (key == 'q') {
+    currentClip = leftClips[leftClipIndex];
+  }
+  else if (key == 'w') {
+    currentClip = rightClips[rightClipIndex];
+  }
   else if(key == 's'){
-    saveCalibration();
+    // saveCalibration();
+    saveClippingMaskCalibration();
     ks.save("mapping.xml");
   }
   else if(key == 'l'){
-    loadCalibration();
+//    loadCalibration();
+    loadClippingMaskCalibration();
     ks.load("mapping.xml");
   }
   else if(key == 'f'){
@@ -198,7 +252,26 @@ void keyPressed(){
       currShape = 0;  
     } 
   }
-   
+}
+
+void saveClippingMaskCalibration() {
+  
+  leftClips[leftClipIndex].saveData();
+  rightClips[rightClipIndex].saveData();
+  
+  //setupClippingMasks();
+}
+
+void loadClippingMaskCalibration() {
+ 
+  for (int i = 0; i < leftMovieFilenames.length; i++) {
+    leftClips[i].loadData();
+  }
+
+  for (int i = 0; i < rightMovieFilenames.length; i++) {
+    rightClips[i].loadData();
+  }
+  
 }
 
 void saveCalibration(){
@@ -219,122 +292,42 @@ void oscEvent(OscMessage theOscMessage) {
   /* print the address pattern and the typetag of the received OscMessage */
   
   String message = theOscMessage.addrPattern();
+  //println(message);
   String[] splitMessage = message.split("/");
+  //println(splitMessage[2]);
+  
   String touchOscKey = splitMessage[2];
   println(touchOscKey);
- 
-
   
   
   /* LOADING IMAGES AND MOVIES   */
-  if(touchOscKey.equals("push1")){
-    println(pushCount);
-    pushCount++;
-    println(pushCount);
-    if (pushCount == 1) {
-   changeMovieRight("testred.mov");
-    kick.trigger();
-    println("Sound1 played");
+  pushCount++;
+  if (pushCount == 1) {
+    
+    if (touchOscKey.equals("push1")) {
+      
+      changeMovieRight(0);
+      kick.trigger();
+       
+    } else if (touchOscKey.equals("push2")) {
+      
+      changeMovieRight(1);
+      snare.trigger();
+      
+    } else if (touchOscKey.equals("push3")) {
+      
+      changeMovieLeft(0);
+      kick.trigger();
+      
+    } else if (touchOscKey.equals("push4")) {
+      
+      changeMovieLeft(1);
+      snare.trigger();
+      
     }
-    if (pushCount == 2) {
-           println(pushCount);
-      pushCount = 0;
-           println(pushCount);
-    }
-  } 
-  
-  
-   else if(touchOscKey.equals("push2")){
-     pushCount++;
-    if (pushCount == 1) {
-   changeMovieRight("testyellow.mov");
-   snare.trigger();
-       println("Sound2 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-    }
-  }
-  
-  
-   else if(touchOscKey.equals("push3")){
-      pushCount++;
-    if (pushCount == 1) {
-   changeMovieRight("testgreen.mov");
-   kick.trigger();
-       println("Sound3 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-  }
-   }
-  
-   else if(touchOscKey.equals("push4")){
-      pushCount++;
-    if (pushCount == 1) {
-   changeMovieRight("testred.mov");
-   snare.trigger();
-       println("Sound4 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-  }
-}
 
-  
-   else if(touchOscKey.equals("push5")){
-      pushCount++;
-    if (pushCount == 1) {
-   changeMovieLeft("testred.mov");
-   snare.trigger();
-       println("Sound4 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
+  } else {
+    pushCount = 0;
   }
-}
-
-  
-   else if(touchOscKey.equals("push6")){
-      pushCount++;
-    if (pushCount == 1) {
-         snare.trigger();
-   changeMovieLeft("testyellow.mov");
-
-       println("Sound4 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-  }
-}
-
-  
-   else if(touchOscKey.equals("push7")){
-      pushCount++;
-    if (pushCount == 1) {
-         snare.trigger();
-   changeMovieLeft("testyellow.mov");
-   snare.trigger();
-       println("Sound4 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-  }
-}
-
-  
-   else if(touchOscKey.equals("push8")){
-      pushCount++;
-    if (pushCount == 1) {
-         snare.trigger();
-   changeMovieLeft("testyellow.mov");
-
-       println("Sound4 played");
-    }
-    if (pushCount == 2) {
-      pushCount = 0;
-  }
-}
-
 
 }
