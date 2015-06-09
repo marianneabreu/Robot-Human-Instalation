@@ -55,12 +55,8 @@ class ClippingMask{
     for(int i=0;i<controlPoints.size();i++){
       if(calibrate){
         stroke(255,0,0);
-        if(currShape == id){
-          strokeWeight(3);
-        }
-        else{
-          strokeWeight(1);  
-        }
+        strokeWeight(1);  
+
         if(controlPoints.get(i).mouseInside){
           fill(255,0,0,175);
         }
