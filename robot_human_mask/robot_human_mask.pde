@@ -131,18 +131,10 @@ void changeMovieLeft(String newMovieFileName) {
   clip[1] = new ClippingMask(this, newMovieFileName, "clip1.json", 0);
   loadCalibration();
   println ("movie Left changed");
-  }
+}
 
 void mousePressed(){
-  
-    /* in the following different ways of creating osc messages are shown by example */
-  OscMessage myMessage = new OscMessage("/test");
-  myMessage.add(123); /* add an int to the osc message */
-
-  /* send the message */
-  oscP5.send(myMessage, myRemoteLocation); 
-  
-  
+    
   if(calibrate){
     ClippingMask currentClip = clip[currShape]; //if you want to interact with another shape, change it here!
     
@@ -206,11 +198,7 @@ void keyPressed(){
       currShape = 0;  
     } 
   }
-  
-  
-  
-  
-  
+   
 }
 
 void saveCalibration(){
@@ -231,10 +219,7 @@ void oscEvent(OscMessage theOscMessage) {
   /* print the address pattern and the typetag of the received OscMessage */
   
   String message = theOscMessage.addrPattern();
-  //println(message);
   String[] splitMessage = message.split("/");
-  //println(splitMessage[2]);
-  
   String touchOscKey = splitMessage[2];
   println(touchOscKey);
  
