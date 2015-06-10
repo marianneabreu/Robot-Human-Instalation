@@ -2,6 +2,7 @@ import quickhull3d.*;
 import ComputationalGeometry.*;
 import processing.video.*;
 
+
 /*** MAPPING THE BLACK MASKS***/
 import deadpixel.keystone.*;
 Keystone ks;
@@ -64,6 +65,7 @@ void setup(){
   }
   
   /*** SETUP: KEYSTONE FOR BLACK MASKS ***/
+  
   ks = new Keystone(this);
  
  for(int i=0; i<face.length; i++){
@@ -100,13 +102,36 @@ void movieEvent(Movie m) {
   m.read();
 }
 
-void delay(int ms) {
-  int time = millis() + ms;
-  while (millis() < time) {}
-}
-
+int time = 0;
+int animationState = 0;
 void draw(){
   background(0);
+
+  if (time != 0) {
+    
+    if (time + 2500 < millis()) {
+      // Reset the clock
+      println("stop");
+      time = millis();
+       } else if (time + 2000 < millis()) {
+      animationState = 2;
+      println("3");
+    } else if (time + 1500 < millis()) {
+      animationState = 3;
+      println("3");
+    } else if (time + 1000 < millis()) {
+      animationState = 2;
+      println("2");
+    } else if (time + 500 < millis()) {
+      animationState = 1;
+      println("1");
+    } else if ((time) < millis()) {
+      animationState = 0;
+      println("0");
+    }
+
+  }
+  
 
   /*** DRAWING: CLIPPING MASKS ***/ 
   leftClips[leftClipIndex].drawClippingMask();
@@ -116,15 +141,24 @@ void draw(){
     /*** DRAWING: KEYSTONE FOR BLACK MASKS (FACE TEXTURES) ***/ 
     for(int i=0; i<face.length; i++){
       faceTextures[i].beginDraw();
-      //faceTextures[i].clear();
-      //faceTextures[i].background(0);
       faceTextures[i].clear();
-  if (animate == true) { 
-   faceTextures[3].tint(255, 255); 
-  } else if (animate == false){
-    faceTextures[3].tint(255, 0);
-    
-  }
+      
+      if (animationState == 0) { 
+       faceTextures[3].tint(255, 0);
+       faceTextures[4].tint(255, 0);
+       
+      } else if (animationState == 1){
+       faceTextures[3].tint(255, 0); 
+       faceTextures[4].tint(255, 255);
+       
+       } else if (animationState == 2){
+       faceTextures[3].tint(255, 255); 
+       faceTextures[4].tint(255, 255);
+ 
+       } else if (animationState == 3){
+       faceTextures[3].tint(255, 0); 
+       faceTextures[4].tint(255, 255);
+      }
       
       faceTextures[i].image(shade[i], 0, 0, faceTextures[i].width, faceTextures[i].height);
       //faceTextures[i].clear();
@@ -213,12 +247,14 @@ void keyPressed(){
     calibrate = false;
     ks.toggleCalibration();
   }
-  
-     else if(key == 'a'){
+  else if(key == 'a'){
    animate = !animate;
    println ("animate");
   }
-  
+  else if(key == 't'){
+    time = millis();
+    println("start");
+  }
 }
 
 void saveClippingMaskCalibration() {  
