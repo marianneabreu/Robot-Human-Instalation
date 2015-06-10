@@ -6,9 +6,11 @@ import processing.video.*;
 import deadpixel.keystone.*;
 Keystone ks;
 
-CornerPinSurface[] face = new CornerPinSurface[3];
-PGraphics[] faceTextures = new PGraphics[3];
-PImage[] shade = new PImage[3];
+CornerPinSurface[] face = new CornerPinSurface[5];
+PGraphics[] faceTextures = new PGraphics[5];
+PImage[] shade = new PImage[5];
+float transparency;
+boolean animate;
 
 
 
@@ -70,6 +72,8 @@ void setup(){
     shade[0] = loadImage("blackmask.png");
     shade[1] = loadImage("blackmask.png");
     shade[2] = loadImage("blackmask.png");
+    shade[3] = loadImage("blackmask.png");
+    shade[4] = loadImage("blackmask.png");
   }
   
   smooth();
@@ -109,14 +113,24 @@ void draw(){
   rightClips[rightClipIndex].drawClippingMask();
   
   
-    /*** DRAWING: KEYSTONE FOR FACE TEXTURES ***/ 
+    /*** DRAWING: KEYSTONE FOR BLACK MASKS (FACE TEXTURES) ***/ 
     for(int i=0; i<face.length; i++){
-    faceTextures[i].beginDraw();
-    faceTextures[i].background(0);
-    faceTextures[i].image(shade[i], 0, 0, faceTextures[i].width, faceTextures[i].height);
-    faceTextures[i].endDraw();
-    face[i].render(faceTextures[i]);
+      faceTextures[i].beginDraw();
+      //faceTextures[i].clear();
+      //faceTextures[i].background(0);
+      faceTextures[i].clear();
+  if (animate == true) { 
+   faceTextures[3].tint(255, 255); 
+  } else if (animate == false){
+    faceTextures[3].tint(255, 0);
+    
   }
+      
+      faceTextures[i].image(shade[i], 0, 0, faceTextures[i].width, faceTextures[i].height);
+      //faceTextures[i].clear();
+      faceTextures[i].endDraw();
+      face[i].render(faceTextures[i]);
+    }
   
   
   if(calibrate){
@@ -198,6 +212,11 @@ void keyPressed(){
   else if(key == 'b'){ // Map the Black Masks
     calibrate = false;
     ks.toggleCalibration();
+  }
+  
+     else if(key == 'a'){
+   animate = !animate;
+   println ("animate");
   }
   
 }
